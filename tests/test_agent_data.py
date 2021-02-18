@@ -15,7 +15,7 @@ class TestData(unittest.TestCase):
 
     def test_get_corp_info_by_code(self):
         print(inspect.stack()[0][3])
-        result = self.data.get_corp_info(code='593')
+        result = self.data.get_corp_info(code="593")
         assert result is not None
         print(result)
 
