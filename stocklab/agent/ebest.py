@@ -47,7 +47,7 @@ class EBest:
         config = configparser.ConfigParser()
         config.read("conf/config.ini")
         self.user = config[run_mode]["user"]
-        self.password = config[run_mode]["passwd"]
+        self.passwd = config[run_mode]["password"]
         self.cert_passwd = config[run_mode]["cert_passwd"]
         self.host = config[run_mode]["host"]
         self.port = config[run_mode]["port"]
@@ -291,7 +291,7 @@ class EBest:
 
     def login(self):
         self.xa_session_client.ConnectServer(self.host, self.port)
-        self.xa_session_client.Login(self.user, self.password, self.cert_passwd, 0, 0)
+        self.xa_session_client.Login(self.user, self.passwd, self.cert_passwd, 0, 0)
 
         while XASession.login_status == 0:
             pythoncom.PumpWaitingMessages()
@@ -322,6 +322,27 @@ class EBest:
         result = self._execute_query(
             "t8436", "t8436InBlock", "t8436OutBlock", *out_params, **in_params
         )
+        return result
+
+    def get_account_info(self):
+        """
+        TR: CSPAQ12200 현물계좌 예수금/주문가능금액/총평가
+        :return result:list Field CSPAQ12200 참고
+        """
+        in_params = {"RecCnt":1, "AcntNo": self.account, "Pwd": self.passwd}
+        out_params = ["MnyOrdAbleAmt", "BalEvalAmt", "DpsastTotamt", "InvstOrgAmt", "InvstPlAmt", "Dps"]
+        result = self._execute_query("CSPAQ12200", "CSPAQ12200InBlock1", "CSPAQ12200OutBlock2", *out_params, **in_params)
+        return result
+
+    def get_account_stock_info(self):
+        """
+        TR: CSPAQ12300 현물계좌 잔고내역 조회
+        :return result:list 계좌 보유 종목 정보
+        """
+        in_params = {"RecCnt":1, "AcntNo": self.account, "Pwd": self.passwd, "BalCreTp": "0",
+        "CmsnAppTpCode": "0", "D2balBaseQryTp": "0", "UprcTpCode": "0"}
+        out_params = ["IsuNo", "IsuNm", "BalQty", "SellPrc", "BuyPrc", "NowPrc", "AvrUprc", "BalEvalAmt", "PrdayCprc"]
+        result = self._execute_query("CSPAQ12300", "CSPAQ12300InBlock1", "CSPAQ12300OutBlock3", *out_params, **in_params)
         return result
 
 
@@ -656,7 +677,7 @@ class Field:
             "CrdtPldgRuseAmt": "신용담보재사용금액",
             "AddCrdtPldgSubst": "추가신용담보대용",
             "CslLoanAmtdt1": "매도대금담보대출금액",
-            "DpslRestrcAmt": "처분제한금액",
+            "DpslRestrcAmt": "처분제한금액"
         }
     }
 

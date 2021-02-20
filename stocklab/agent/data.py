@@ -12,56 +12,50 @@ class Data:
 
     def __init__(self):
         config = configparser.RawConfigParser()
-        config.read("conf/config.ini")
+        config.read('conf/config.ini')
         self.api_key = config["DATA"]["api_key"]
         if self.api_key is None:
             raise Exception("Need to api key")
 
     def get_corp_code(self, name=None):
         """
-        한국예탁결제원에서 제공하는 기업 코드를 회사명으로 검색합니다.
-        :param name:str 회사명 ex) 삼성전자, 삼성 등..
-        :return:dict 회사 코드와 회사명을 반환합니다.
+        한국예탁결제원에서 제공하는 기업코드를 회사명칭으로 검색합니다.
+        :param name:str 회사명칭 ex) 삼성전자, 삼성 등
+        :return result:dict 회사코드와 명칭을 반환합니다.
         """
-
-        query_params = {
-            "serviceKey": self.api_key,
-            "issucoNm": name,
-            "numOfRows": str(5000),
-        }
-        request_url = self.CORP_CODE_URL + "?"
+        query_params = {"serviceKey":self.api_key,
+                        "issucoNm": name,
+                        "numOfRows": str(5000)}
+        request_url =self.CORP_CODE_URL+"?"
         for k, v in query_params.items():
-            request_url = request_url + k + "=" + v + "&"
-
+            request_url = request_url + k + "=" + v +"&"
+        print(request_url)
         res = requests.get(request_url[:-1])
         root = ET.fromstring(res.text)
         from_tags = root.iter("items")
         result = {}
         for items in from_tags:
-            for item in items.iter("item"):
-                if name in item.find("issucoNm").text.split():
-                    result["issucoCustno"] = item.find("issucoCustno").text
-                    result["issucoNm"] = item.find("issucoNm").text
+            for item in items.iter('item'):
+                if name in item.find('issucoNm').text.split():
+                    result["issucoCustno"] = item.find('issucoCustno').text
+                    result["issucoNm"] = item.find('issucoNm').text
         return result
 
     def get_corp_info(self, code=None):
         """
-        기업기본정보 기업개요 조회 API 입니다.
-        :param code: str 숫자로 관리되며 발행회사번호 조회에서 확인
-        :return:dict 기업개요 정보를 반환합니다.
+        기업기본정보 기업개요 조회 API입니다.
+        :param code:str 숫자로 관리되며 발행회사번호 조회에서 확인
+        :return result:dict 기업개요 정보를 반환합니다.
         """
-
-        query_params = {
-            "serviceKey": self.api_key,
-            'issucoCustno': code.replace('0', ''),
-        }
-        request_url = self.CORP_INFO_URL+'?'
+        query_params = {"serviceKey":self.api_key,
+                        "issucoCustno": code}
+        request_url =self.CORP_INFO_URL+"?"
         for k, v in query_params.items():
-            request_url = request_url + k + '=' + v + '&'
-
+            request_url = request_url + k + "=" + v +"&"
+        print(request_url)
         res = requests.get(request_url[:-1])
         root = ET.fromstring(res.text)
-        from_tags = root.iter('item')
+        from_tags = root.iter("item")
         result = {}
         for item in from_tags:
             result["apliDt"] = item.find('apliDt').text
@@ -85,9 +79,9 @@ class Data:
                         "issucoCustno": code,
                         "rgtStdDt": date}
 
-        request_url = self.STOCK_DISTRIBUTION_URL + "?"
+        request_url =self.STOCK_DISTRIBUTION_URL+"?"
         for k, v in query_params.items():
-            request_url = request_url + k + "=" + v + "&"
+            request_url = request_url + k + "=" + v +"&"
         print(request_url)
         res = requests.get(request_url[:-1])
         root = ET.fromstring(res.text)
