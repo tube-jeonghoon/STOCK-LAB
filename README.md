@@ -1,1 +1,1 @@
-"# STOCK-LAB" 
+# STOCK-LAB
